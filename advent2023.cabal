@@ -1,0 +1,56 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.3.
+--
+-- see: https://github.com/sol/hpack
+
+name:           advent2023
+version:        0.1.0
+synopsis:       Advent of Code 2023
+category:       Development
+homepage:       https://github.com/seanhess/advent2023
+author:         Sean Hess
+maintainer:     shess@nso.edu
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+executable level2
+  main-is: Main.hs
+  other-modules:
+      App.Prelude
+      Day1.Calibration
+      Paths_advent2023
+  autogen-modules:
+      Paths_advent2023
+  hs-source-dirs:
+      app
+  default-extensions:
+      TypeFamilies
+      DataKinds
+      DeriveAnyClass
+      DerivingStrategies
+      OverloadedRecordDot
+      OverloadedStrings
+      QuasiQuotes
+      DuplicateRecordFields
+      LambdaCase
+      NoImplicitPrelude
+      NoFieldSelectors
+  ghc-options: -Wall
+  build-depends:
+      aeson
+    , base >=4.16.4.0
+    , bytestring
+    , containers
+    , effectful
+    , exceptions
+    , megaparsec
+    , string-conversions
+    , string-interpolate
+    , tagged
+    , text
+    , time
+  default-language: GHC2021

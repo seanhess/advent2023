@@ -1,0 +1,51 @@
+name:               advent2023
+version:            0.1.0
+synopsis:           Advent of Code 2023
+homepage:           https://github.com/seanhess/advent2023
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             Sean Hess
+maintainer:         shess@nso.edu
+category:           Development
+
+extra-source-files:
+  - README.md
+
+language: GHC2021
+
+
+ghc-options:
+  - -Wall
+
+default-extensions:
+  - TypeFamilies
+  - DataKinds
+  - DeriveAnyClass
+  - DerivingStrategies
+  - OverloadedRecordDot
+  - OverloadedStrings
+  - QuasiQuotes
+  - DuplicateRecordFields
+  - LambdaCase
+  - NoImplicitPrelude
+  - NoFieldSelectors
+
+dependencies:
+  - base >=4.16.4.0
+  - aeson
+  - bytestring
+  - text
+  - tagged
+  - time
+  - exceptions
+  - string-interpolate
+  - containers
+  - effectful
+  - string-conversions
+  - megaparsec
+
+
+executables:
+  level2:
+    source-dirs: app
+    main: Main.hs
