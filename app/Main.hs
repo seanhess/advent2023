@@ -1,10 +1,10 @@
 module Main where
 
 import App.Prelude
-import Day1.Calibration
+
+-- import Day1.Calibration
+import Day2.BlockGame as BlockGame
 
 main :: IO ()
 main = do
-  inp <- readFile "app/Day1/input.txt"
-  let Calibration s = sumCalibrations2 $ lines inp
-  print s
+  BlockGame.test

@@ -22,6 +22,7 @@ executable level2
   other-modules:
       App.Prelude
       Day1.Calibration
+      Day2.BlockGame
       Paths_advent2023
   autogen-modules:
       Paths_advent2023
