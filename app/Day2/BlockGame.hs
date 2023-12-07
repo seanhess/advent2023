@@ -27,6 +27,36 @@ data Color = Red | Green | Blue
 data ColorBlocks = ColorBlocks {color :: Color, numBlocks :: Int}
   deriving (Show, Eq)
 
+-- Possible -----------------------------
+
+isPossible :: Blocks -> Bool
+isPossible Blocks{red, green, blue} =
+  red <= 12 && green <= 13 && blue <= 14
+
+gameIsPossible :: Game -> Bool
+gameIsPossible g = all isPossible g.handfuls
+
+sumIds :: [Game] -> Int
+sumIds = sum . map (.gameId)
+
+-- Possible 2 ---------------------------
+
+maxOn :: (Ord b) => (a -> b) -> [a] -> b
+maxOn f = maximum . map f
+
+maxColors :: [Blocks] -> Blocks
+maxColors bs =
+  let red = maxOn (.red) bs
+      green = maxOn (.green) bs
+      blue = maxOn (.blue) bs
+   in Blocks{red, green, blue}
+
+fewestCubes :: Game -> Blocks
+fewestCubes g = maxColors g.handfuls
+
+cubesPower :: Blocks -> Int
+cubesPower b = b.red * b.green * b.blue
+
 -- Parsers ------------------------------
 
 type Parser = Parsec Void String
@@ -76,15 +106,24 @@ parseBlocks = do
 
 test :: IO ()
 test = do
-  -- inp <- readFile "app/Day2/input2.txt"
-  b <- parseIO parseBlocks "1 blue, 2 green" "1 blue, 2 green"
-  equals b (Blocks 0 2 1)
+  tb <- parseIO parseBlocks "1 blue, 2 green" "1 blue, 2 green"
+  equals tb (Blocks 0 2 1)
 
-  g <- parseIO parseGame "inline" "Game 1: 3 blue, 4 red"
-  equals g $ Game 1 [Blocks 4 0 3]
+  tg <- parseIO parseGame "inline" "Game 1: 3 blue, 4 red"
+  equals tg $ Game 1 [Blocks 4 0 3]
 
-  gs <- parseIO parseGames "testInput" testInput
-  mapM_ print gs
+  tgs <- parseIO parseGames "testInput" testInput
+  equals (length tgs) 5
+
+  inp <- readFile "app/Day2/input2.txt"
+  gs <- parseIO parseGames "input2.txt" inp
+
+  putStrLn "Part 1"
+  print $ sumIds $ filter gameIsPossible gs
+
+  putStrLn "Part 2"
+  mapM_ (print . fewestCubes) tgs
+  print $ sum $ map (cubesPower . fewestCubes) gs
 
 equals :: (Eq a, Show a) => a -> a -> IO ()
 equals a b = do
