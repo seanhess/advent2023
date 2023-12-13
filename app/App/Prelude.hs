@@ -29,9 +29,13 @@ module App.Prelude
   , putStr
   , readFile
   , Identity
+
+    -- * Missing functions
+  , maxOn
+  , equals
+  , parseIO
   ) where
 
-import Control.Applicative ((<|>))
 import Control.Monad (forM, forM_, guard, unless, when, zipWithM_)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function ((&))
@@ -47,6 +51,7 @@ import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
 import Effectful
 import GHC.Generics (Generic)
+import Text.Megaparsec
 import Prelude hiding (Real, print, putStr, putStrLn, readFile, reverse, writeFile)
 import Prelude qualified
 
@@ -61,3 +66,22 @@ putStr = liftIO . Prelude.putStr
 
 readFile :: (MonadIO m) => FilePath -> m String
 readFile = liftIO . Prelude.readFile
+
+maxOn :: (Ord b) => (a -> b) -> [a] -> b
+maxOn f = maximum . map f
+
+equals :: (Eq a, Show a) => a -> a -> IO ()
+equals a b = do
+  when (a /= b) $ do
+    putStrLn "Expected (==)"
+    putStrLn $ "\t" <> show a
+    putStrLn $ "\t" <> show b
+    fail "ASSERTION FAILED"
+
+parseIO :: (VisualStream s, TraversableStream s, ShowErrorComponent e) => Parsec e s a -> String -> s -> IO a
+parseIO parser src inp =
+  case parse parser src inp of
+    Left bundle -> do
+      putStrLn (errorBundlePretty bundle)
+      fail "Failed Parse"
+    Right g -> pure g

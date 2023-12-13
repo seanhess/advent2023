@@ -3,8 +3,8 @@ module Main where
 import App.Prelude
 
 -- import Day1.Calibration
-import Day2.BlockGame as BlockGame
+import Day3.EngineParts
 
 main :: IO ()
 main = do
-  BlockGame.test
+  Day3.EngineParts.test

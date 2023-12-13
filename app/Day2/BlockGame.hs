@@ -24,6 +24,7 @@ data Blocks = Blocks
 data Color = Red | Green | Blue
   deriving (Eq, Show)
 
+-- | For parsing, we parse a color and the number of cubes it has
 data ColorBlocks = ColorBlocks {color :: Color, numBlocks :: Int}
   deriving (Show, Eq)
 
@@ -40,9 +41,6 @@ sumIds :: [Game] -> Int
 sumIds = sum . map (.gameId)
 
 -- Possible 2 ---------------------------
-
-maxOn :: (Ord b) => (a -> b) -> [a] -> b
-maxOn f = maximum . map f
 
 maxColors :: [Blocks] -> Blocks
 maxColors bs =
@@ -124,22 +122,6 @@ test = do
   putStrLn "Part 2"
   mapM_ (print . fewestCubes) tgs
   print $ sum $ map (cubesPower . fewestCubes) gs
-
-equals :: (Eq a, Show a) => a -> a -> IO ()
-equals a b = do
-  when (a /= b) $ do
-    putStrLn "Expected (==)"
-    putStrLn $ "\t" <> show a
-    putStrLn $ "\t" <> show b
-    fail "ASSERTION FAILED"
-
-parseIO :: (VisualStream s, TraversableStream s, ShowErrorComponent e) => Parsec e s a -> String -> s -> IO a
-parseIO parser src inp =
-  case parse parser src inp of
-    Left bundle -> do
-      putStrLn (errorBundlePretty bundle)
-      fail "Failed Parse"
-    Right g -> pure g
 
 testInput :: String
 testInput =

@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.35.3.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -23,6 +23,7 @@ executable level2
       App.Prelude
       Day1.Calibration
       Day2.BlockGame
+      Day3.EngineParts
       Paths_advent2023
   autogen-modules:
       Paths_advent2023
