@@ -17,22 +17,22 @@ data IndexedChar = IndexedChar
   }
   deriving (Show, Eq)
 
-data Grid = Grid
-  { chars :: [[Char]]
+data Grid a = Grid
+  { rows :: [[a]]
   , maxX :: Int
   , maxY :: Int
   }
 
-grid :: [String] -> Grid
+grid :: [[a]] -> Grid a
 grid [] = Grid [] 0 0
-grid chars@(r : _) =
+grid rows@(r : _) =
   let maxX = length r - 1
-      maxY = length chars - 1
-   in Grid{chars, maxX, maxY}
+      maxY = length rows - 1
+   in Grid{rows, maxX, maxY}
 
-parseCharsIndexed :: Grid -> [IndexedChar]
+parseCharsIndexed :: Grid Char -> Grid IndexedChar
 parseCharsIndexed g =
-  mconcat . indexRows $ g.chars
+  grid . indexRows $ g.rows
  where
   indexRows :: [String] -> [[IndexedChar]]
   indexRows rows =
@@ -58,37 +58,40 @@ surrounding mx my Loc{x, y} =
   notNegative x' y' = x' >= 0 && y' >= 0
   notTooBig x' y' = x' <= mx && y' <= my
 
-findChars :: Grid -> [Loc] -> [Char]
+findChars :: Grid IndexedChar -> [Loc] -> [IndexedChar]
 findChars g =
   map findChar
  where
-  findChar :: Loc -> Char
+  findChar :: Loc -> IndexedChar
   findChar loc =
-    let row = g.chars !! loc.y
+    let row = g.rows !! loc.y
      in row !! loc.x
 
 -- Grouping ----------------------------------------------------
 
-newtype PartNumber = PartNumber Int
-  deriving newtype (Num, Show, Eq)
+data PartNumber = PartNumber
+  { number :: Int
+  , symbols :: [IndexedChar]
+  }
+  deriving (Show, Eq)
 
-partNumbers :: Grid -> [IndexedChar] -> [PartNumber]
-partNumbers g ics =
-  mapMaybe parseGroup $ groupByDigits ics
+partNumbers :: Grid IndexedChar -> [PartNumber]
+partNumbers g =
+  mapMaybe parseGroup $ groupByDigits $ mconcat g.rows
  where
   parseGroup :: [IndexedChar] -> Maybe PartNumber
   parseGroup grp = do
-    guard (any isNearSymbol grp)
+    let syms = mconcat $ map nearbySymbols grp
+    guard $ not (null syms)
     n <- readGroup grp
-    pure $ PartNumber n
+    pure $ PartNumber n syms
 
-  isNearSymbol :: IndexedChar -> Bool
-  isNearSymbol ic =
-    any isSymbol $ findChars g (surrounding g.maxX g.maxY ic.loc)
+  nearbySymbols :: IndexedChar -> [IndexedChar]
+  nearbySymbols ic =
+    filter isSymbol $ findChars g (surrounding g.maxX g.maxY ic.loc)
 
-  isSymbol :: Char -> Bool
-  isSymbol '.' = False
-  isSymbol c = not (isDigit c)
+  isSymbol :: IndexedChar -> Bool
+  isSymbol ic = not (isDigit ic.char) && ic.char /= '.'
 
 readGroup :: [IndexedChar] -> Maybe Int
 readGroup ics =
@@ -102,9 +105,36 @@ groupByDigits = groupBy byDigits
 
 parsePartNumbers :: [String] -> [PartNumber]
 parsePartNumbers lns =
-  let g = grid lns
-      ics = parseCharsIndexed g
-   in partNumbers g ics
+  partNumbers $ parseCharsIndexed $ grid lns
+
+-- Part 2 --------------------------------------------------
+
+data Gear = Gear PartNumber PartNumber
+  deriving (Show)
+
+isPartAdjacent :: Loc -> PartNumber -> Bool
+isPartAdjacent Loc{x, y} part = any isLoc part.symbols
+ where
+  isLoc s = s.loc.x == x && s.loc.y == y
+
+gridStars :: Grid IndexedChar -> [IndexedChar]
+gridStars g = filter (\c -> c.char == '*') $ mconcat g.rows
+
+starParts :: IndexedChar -> [PartNumber] -> [PartNumber]
+starParts star = filter (isPartAdjacent star.loc)
+
+gears :: [PartNumber] -> Grid IndexedChar -> [Gear]
+gears parts =
+  mapMaybe toGear . gridStars
+ where
+  toGear :: IndexedChar -> Maybe Gear
+  toGear star = do
+    case starParts star parts of
+      [p1, p2] -> pure $ Gear p1 p2
+      _ -> Nothing
+
+gearRatio :: Gear -> Int
+gearRatio (Gear (PartNumber a _) (PartNumber b _)) = a * b
 
 test :: IO ()
 test = do
@@ -113,8 +143,8 @@ test = do
 
   -- Parsing
   let g = grid $ lines ti
-  let ics = parseCharsIndexed g
-  let plus = head $ filter (\ic -> ic.char == '+') ics
+  let gi = parseCharsIndexed g
+  let plus = head $ filter (\ic -> ic.char == '+') $ mconcat gi.rows
   plus.loc `equals` Loc{x = 5, y = 5}
 
   -- Surrounding
@@ -124,16 +154,25 @@ test = do
   surrounding 2 2 (Loc 1 1) `equals` [Loc 0 0, Loc 0 1, Loc 0 2, Loc 1 0, Loc 1 2, Loc 2 0, Loc 2 1, Loc 2 2]
 
   -- Surrounding Chars
-  let dolla = head $ filter (\ic -> ic.char == '$') ics
-  let around = findChars g (surrounding 10 10 dolla.loc)
+  let dolla = head $ filter (\ic -> ic.char == '$') $ mconcat gi.rows
+  let around = map (.char) $ findChars gi (surrounding 10 10 dolla.loc)
   let nums = filter isDigit around
   nums `equals` "64"
 
   -- Part Numbers
-  let pnums = partNumbers g ics
-  sum pnums `equals` 4361
+  let pnums = partNumbers gi
+  sum (map (.number) pnums) `equals` 4361
 
-  -- Final Answer
+  -- Gears
+  let gs = gears pnums gi
+  map gearRatio gs `equals` [16345, 451490]
+
+  -- Part 1
   inp <- readFile "app/Day3/input3.txt"
   let ps = parsePartNumbers (lines inp)
-  print $ sum ps
+  print $ sum (map (.number) ps)
+
+  -- Part 2
+  let gi2 = parseCharsIndexed $ grid $ lines inp
+  let gs2 = gears ps gi2
+  print $ sum $ map gearRatio gs2
