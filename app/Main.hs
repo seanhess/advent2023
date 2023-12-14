@@ -3,8 +3,8 @@ module Main where
 import App.Prelude
 
 -- import Day1.Calibration
-import Day3.EngineParts
+import Day4.Scratchcards
 
 main :: IO ()
 main = do
-  Day3.EngineParts.test
+  Day4.Scratchcards.test

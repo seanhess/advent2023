@@ -3,7 +3,6 @@ module Day2.BlockGame where
 import App.Prelude
 import Data.List qualified as L
 import Data.String.Interpolate (i)
-import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer (decimal)

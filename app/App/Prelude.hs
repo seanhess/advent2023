@@ -10,6 +10,7 @@ module App.Prelude
   , Map
   , Text
   , UTCTime
+  , Void
 
     -- * List functions
   , module Data.List
@@ -49,6 +50,7 @@ import Data.String (IsString)
 import Data.String.Conversions (cs)
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
+import Data.Void (Void)
 import Effectful
 import GHC.Generics (Generic)
 import Text.Megaparsec

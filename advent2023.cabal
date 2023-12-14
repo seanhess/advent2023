@@ -24,6 +24,7 @@ executable level2
       Day1.Calibration
       Day2.BlockGame
       Day3.EngineParts
+      Day4.Scratchcards
       Paths_advent2023
   autogen-modules:
       Paths_advent2023
