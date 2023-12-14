@@ -37,36 +37,49 @@ test = do
   equals 219 (length cards)
 
   let pnts = map (points . countWinning) cards
+  putStrLn "Part One"
   print $ sum pnts
- where
+
+  -- part two
+  equals [2, 3, 4, 5] $ map (.id) $ copies tcs
+  equals [3, 4] $ map (.id) $ copies $ drop 1 tcs
+
+  print $ map (.id) tcs
+  print $ allCards tcs
+
+  print $ mconcat $ allCards tcs
 
 -- zipWithM_ check cards pnts
-
 -- check c n = do
 --   putStrLn $ (show n) <> "\t" <> show c
-
 -- print $ sum pnts
 
 type Parser = Parsec Void String
 
 data Card = Card
-  { winning :: [Int]
+  { id :: Int
+  , winning :: [Int]
   , numbers :: [Int]
   }
-  deriving (Show)
+
+instance Show Card where
+  show c = show c.id
 
 parseCards :: Parser [Card]
 parseCards = many parseCard
 
 parseCard :: Parser Card
 parseCard = do
-  _ <- manyTill anySingle (char ':')
+  _ <- string "Card"
+  space
+  d <- decimal
+  _ <- char ':'
   space
   ws <- decimal `sepEndBy` space
   _ <- string "| "
   space
   ns <- decimal `sepEndBy` space
-  pure $ Card ws ns
+  pure $ Card d ws ns
 
 newtype NumWinning = NumWinning Int
   deriving (Eq, Show)
@@ -85,3 +98,21 @@ points (NumWinning n) =
   let ex = fromIntegral (n - 1) :: Float
       base = 2 :: Float
    in Points $ round (base ** ex)
+
+-- Part 2 ------------------------------------------
+
+allCards :: [Card] -> [[Card]]
+allCards [] = []
+allCards (c : cx) =
+  let cps = copies (c : cx)
+   in [c : cps] <> allCards cx <> allCards cps
+
+--   let NumWinning win = countWinning cd
+--       msg = show ("ID", cd.id, map (.id) $ take win cds)
+--    in trace msg $ 1 + processCards cds + processCards (take win cds)
+
+copies :: [Card] -> [Card]
+copies [] = []
+copies (cd : cds) =
+  let NumWinning win = countWinning cd
+   in take win cds
