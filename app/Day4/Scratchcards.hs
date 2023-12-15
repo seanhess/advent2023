@@ -41,18 +41,20 @@ test = do
   print $ sum pnts
 
   -- part two
-  equals [2, 3, 4, 5] $ map (.id) $ copies tcs
-  equals [3, 4] $ map (.id) $ copies $ drop 1 tcs
+  let start n = drop (n - 1)
 
-  print $ map (.id) tcs
-  print $ allCards tcs
+  -- all copies
+  equals [[6]] $ map (map (.id)) $ allCopies $ start 6 tcs
+  equals [[5], [6]] $ map (map (.id)) $ allCopies $ start 5 tcs
+  equals [[4, 5], [5], [6]] $ map (map (.id)) $ allCopies $ start 4 tcs
+  equals 30 $ totalScratchcards tcs
 
-  print $ mconcat $ allCards tcs
+  print $ totalScratchcards cards
 
--- zipWithM_ check cards pnts
--- check c n = do
---   putStrLn $ (show n) <> "\t" <> show c
--- print $ sum pnts
+data Copies = Copies
+  { source :: Card
+  , copies :: Copies
+  }
 
 type Parser = Parsec Void String
 
@@ -101,18 +103,21 @@ points (NumWinning n) =
 
 -- Part 2 ------------------------------------------
 
-allCards :: [Card] -> [[Card]]
-allCards [] = []
-allCards (c : cx) =
-  let cps = copies (c : cx)
-   in [c : cps] <> allCards cx <> allCards cps
+-- https://github.com/mnvr/advent-of-code-2023/blob/main/04.hs
+totalScratchcards :: [Card] -> Int
+totalScratchcards =
+  length . mconcat . allCopies
 
---   let NumWinning win = countWinning cd
---       msg = show ("ID", cd.id, map (.id) $ take win cds)
---    in trace msg $ 1 + processCards cds + processCards (take win cds)
-
-copies :: [Card] -> [Card]
-copies [] = []
-copies (cd : cds) =
-  let NumWinning win = countWinning cd
-   in take win cds
+allCopies :: [Card] -> [[Card]]
+allCopies =
+  foldr f []
+ where
+  -- 6: just itself, ok
+  -- 5, [[6]]
+  -- 4: [[5], [6]]
+  -- it's also WAY easier to see what's happening here and debug
+  f :: Card -> [[Card]] -> [[Card]]
+  f card wins = w : wins
+   where
+    NumWinning m = countWinning card
+    w = card : mconcat (take m wins)
