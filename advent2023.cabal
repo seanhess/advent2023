@@ -26,6 +26,7 @@ executable advent
       Day3.EngineParts
       Day4.Scratchcards
       Day5.Seeds
+      Day6.BoatRace
       Paths_advent2023
   autogen-modules:
       Paths_advent2023
