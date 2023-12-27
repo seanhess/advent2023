@@ -20,6 +20,7 @@ extra-source-files:
 executable advent
   main-is: Main.hs
   other-modules:
+      App.Parse
       App.Prelude
       Day1.Calibration
       Day2.BlockGame
@@ -27,6 +28,7 @@ executable advent
       Day4.Scratchcards
       Day5.Seeds
       Day6.BoatRace
+      Day7.CamelCards
       Paths_advent2023
   autogen-modules:
       Paths_advent2023

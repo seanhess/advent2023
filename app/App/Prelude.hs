@@ -37,6 +37,8 @@ module App.Prelude
   , parseIO
   ) where
 
+import App.Parse (parseIO)
+import Control.Applicative ((<|>))
 import Control.Monad (forM, forM_, guard, unless, when, zipWithM_)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Function ((&))
@@ -53,7 +55,6 @@ import Data.Time.Clock (UTCTime)
 import Data.Void (Void)
 import Effectful
 import GHC.Generics (Generic)
-import Text.Megaparsec
 import Prelude hiding (Real, print, putStr, putStrLn, readFile, reverse, writeFile)
 import Prelude qualified
 
@@ -79,11 +80,3 @@ equals a b = do
     putStrLn $ "\t" <> show a
     putStrLn $ "\t" <> show b
     fail "ASSERTION FAILED"
-
-parseIO :: (VisualStream s, TraversableStream s, ShowErrorComponent e) => Parsec e s a -> String -> s -> IO a
-parseIO parser src inp =
-  case parse parser src inp of
-    Left bundle -> do
-      putStrLn (errorBundlePretty bundle)
-      fail "Failed Parse"
-    Right g -> pure g
