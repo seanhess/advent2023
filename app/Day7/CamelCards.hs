@@ -3,6 +3,7 @@ module Day7.CamelCards where
 import App.Parse
 import App.Prelude
 import Data.List (sort)
+import Data.String (IsString (..))
 import Data.String.Interpolate (i)
 
 test :: IO ()
@@ -13,27 +14,30 @@ test = do
   equals (Hand C3 C2 T C3 K) (head trnd).hand
   equals (Hand Q Q Q J A) (last trnd).hand
 
-  equals OnePair $ handTier $ Hand C3 C2 T C3 K
-  equals FullHouse $ handTier $ Hand A Q Q A Q
-  equals FiveOfAKind $ handTier $ Hand J J J J J
-  equals FourOfAKind $ handTier $ Hand J J C3 J J
-  equals TwoPair $ handTier $ Hand J J C3 Q C3
-  equals ThreeOfAKind $ handTier $ Hand J J C3 J Q
-  equals HighCard $ handTier $ Hand J K C3 A Q
+  equals OnePair $ handTier "32T3K"
+  equals TwoPair $ handTier "KK677"
+  equals FourOfAKind $ handTier "T55J5"
+  equals FourOfAKind $ handTier "KTJJT"
+  equals FourOfAKind $ handTier "QQQJA"
+  equals ThreeOfAKind $ handTier "QQQ9A"
+  equals ThreeOfAKind $ handTier "QQJ9A"
 
   let hands = map (.hand) trnd
   [h0, h1, h2, h3, h4] <- pure hands
-  equals (Hand Q Q Q J A) $ maximum hands
-  equals (Hand C3 C2 T C3 K) $ minimum hands
+  equals "KTJJT" $ maximum hands
+  equals "32T3K" $ minimum hands
   equals LT $ compare (Hand T T T C9 T) (Hand T T T T C9)
 
-  equals [h0, h3, h2, h1, h4] $ sort hands
+  equals [h0, h2, h1, h4, h3] $ sort hands
 
   print $ totalWinnings $ rankRound trnd
+  equals 5905 $ totalWinnings $ rankRound trnd
 
   putStrLn "Part 1"
   rnd <- parseFile "app/Day7/input7.txt" parseRound
   print $ totalWinnings $ rankRound rnd
+
+  putStrLn "Part 2"
 
   pure ()
 
@@ -65,17 +69,26 @@ handTier (Hand c1 c2 c3 c4 c5)
   | any (isLength 2) cards = OnePair
   | otherwise = HighCard
  where
-  cards = group $ sort [c1, c2, c3, c4, c5]
+  -- [AAA, J, 9, AAAJ, ]
+  cards = group $ sort $ filter (/= J) [c1, c2, c3, c4, c5]
 
-  isLength n cds = length cds == n
+  -- the problem is that you can only use a joker once!
+  jokers = length $ filter (== J) [c1, c2, c3, c4, c5]
+
+  isLength n cds = (length cds + jokers) == n
 
 -- Types --------------------------------------------------------
 
-data Card = C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | T | J | Q | K | A
+data Card = J | C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | T | Q | K | A
   deriving (Show, Eq, Ord)
 
 data Hand = Hand Card Card Card Card Card
   deriving (Eq, Show)
+
+instance IsString Hand where
+  fromString s = fromMaybe (Hand A A A A A) $ do
+    [c1, c2, c3, c4, c5] <- mapM toCard s
+    pure $ Hand c1 c2 c3 c4 c5
 
 instance Ord Hand where
   compare h1 h2 =
@@ -131,19 +144,20 @@ parseHand =
 parseCard :: Parser Card
 parseCard = do
   c <- anySingle
-  card c
- where
-  card 'A' = pure A
-  card 'K' = pure K
-  card 'Q' = pure Q
-  card 'J' = pure J
-  card 'T' = pure T
-  card '9' = pure C9
-  card '8' = pure C8
-  card '7' = pure C7
-  card '6' = pure C6
-  card '5' = pure C5
-  card '4' = pure C4
-  card '3' = pure C3
-  card '2' = pure C2
-  card c = fail $ "card " <> show c
+  toCard c
+
+toCard :: (MonadFail m) => Char -> m Card
+toCard 'A' = pure A
+toCard 'K' = pure K
+toCard 'Q' = pure Q
+toCard 'J' = pure J
+toCard 'T' = pure T
+toCard '9' = pure C9
+toCard '8' = pure C8
+toCard '7' = pure C7
+toCard '6' = pure C6
+toCard '5' = pure C5
+toCard '4' = pure C4
+toCard '3' = pure C3
+toCard '2' = pure C2
+toCard c = fail $ "card " <> show c
